@@ -8,23 +8,23 @@ const BossId = [781, 3000]; // Lakan NM
 const BossMessages = {
 	9781043: 1192035708,	// Lakan has noticed you.
 	9781044: 1192037407,	// Lakan is trying to take you on one at a time.
-	9781045: 1192035605		// Lakan intends to kill all of you at once.
+	9781045: 1192035605	// Lakan intends to kill all of you at once.
 };
 
 const BossActions = {
 	1192035448: {msg: 'Get out',				msgParty: ''}, // Begone purple
-	1192035449: {msg: 'Get in',					msgParty: ''}, // Begone orange
-	1192035705: {msg: 'Dodge + plague/regress',	msgParty: 'ring'}, // Shield
+	1192035449: {msg: 'Get in',				msgParty: ''}, // Begone orange
+	1192035705: {msg: 'Dodge + plague/regress',		msgParty: 'ring'}, // Shield
 	// > 30%
-	1192035708: {msg: 'Debuff (closest)',		msgParty: 'D',	next: 1192037407,	prev: 1192035605}, // Debuff
+	1192035708: {msg: 'Debuff (closest)',			msgParty: 'D',	next: 1192037407,	prev: 1192035605}, // Debuff
 	1192037407: {msg: 'Spread', 				msgParty: 'S',	next: 1192035605,	prev: 1192035708}, // Spread aka Circles
-	1192035605: {msg: 'Gather + cleanse', 		msgParty: 'GC',	next: 1192035708,	prev: 1192037407}, // Gather
+	1192035605: {msg: 'Gather + cleanse', 			msgParty: 'GC',	next: 1192035708,	prev: 1192037407}, // Gather
 	// < 30%
-	1192035709: {msg: 'Debuff (furthest)',		msgParty: 'D',	next: 1192035606}, // Debuff
-	1192037409: {msg: 'Gather',					msgParty: 'G',	next: 1192035709}, // Spread aka Circles
-	1192035606: {msg: 'Gather + no cleanse',	msgParty: 'G',	next: 1192037409}, // Gather
+	1192035709: {msg: 'Debuff (furthest)',			msgParty: 'D',	next: 1192035606}, // Debuff
+	1192037409: {msg: 'Gather',				msgParty: 'G',	next: 1192035709}, // Spread aka Circles
+	1192035606: {msg: 'Gather + no cleanse',		msgParty: 'G',	next: 1192037409}, // Gather
 	//
-	'ShieldWarning': {msg: 'Ring soon, get ready to dodge', msgParty: 'ring'},
+	'ShieldWarning': {msg: 'Ring soon, get ready to dodge',	msgParty: 'ring'},
 };
 
 const InversedAction = {
