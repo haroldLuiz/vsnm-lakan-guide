@@ -36,7 +36,7 @@ const InversedAction = {
 const ShieldWarningTrigger = 0.35; //boss hp%
 
 module.exports = function VSNMLakanGuide(dispatch) {
-	
+
 	let enabled = true,
 		sendToParty = false,
 		sendToPartyLong = false,
@@ -47,7 +47,8 @@ module.exports = function VSNMLakanGuide(dispatch) {
 		shieldWarned,
 		timerNextMechanic, 
 		lastAction,
-		isReversed;
+		isReversed,
+		supressNotice;
 
 	// slash support
 	try {
@@ -57,6 +58,8 @@ module.exports = function VSNMLakanGuide(dispatch) {
 		slash.on('vsnmlakan', args => toggleModule());
 		slash.on('vsnm-lakan.party', args => toggleSentMessages());
 		slash.on('vsnmlakan.party', args => toggleSentMessages());
+		slash.on('vsnm-lakan.party.long', args => toggleSentMessagesLong());
+		slash.on('vsnmlakan.party.long', args => toggleSentMessagesLong());
 	} catch (e) {
 		slash = false;
 	}
@@ -65,7 +68,15 @@ module.exports = function VSNMLakanGuide(dispatch) {
 		try {
 			const Command = require('command');
 			const command = Command(dispatch);
-			
+			command.add('vsnm-lakan', () => {
+				toggleModule();
+			});
+			command.add('vsnm-lakan.party', () => {
+				toggleSentMessages();
+			});
+			command.add('vsnm-lakan.party.long', () => {
+				toggleSentMessagesLong();
+			});
 		} catch (e) {
 			command = false;
 		}
@@ -79,6 +90,9 @@ module.exports = function VSNMLakanGuide(dispatch) {
 			} else if (['!vsnm-lakan.party', '!vsnmlakan.party'].includes(command[0].toLowerCase())) {
 				toggleSentMessages();
 				return false;
+			} else if (['!vsnm-lakan.party.long', '!vsnmlakan.party.long'].includes(command[0].toLowerCase())) {
+				toggleSentMessagesLong();
+				return false;
 			}
 		}
 		dispatch.hook('C_CHAT', 1, chatHook)	
@@ -87,18 +101,35 @@ module.exports = function VSNMLakanGuide(dispatch) {
 
 	function toggleModule() {
 		enabled = !enabled;
+		sendToPartyLong = false;
+		sendToParty = false;
 		systemMessage((enabled ? 'enabled' : 'disabled'));
 	}
 
 	function toggleSentMessages() {
+		if (!enabled) {
+			systemMessage('Enable the mod first');
+			return;
+		}
+		sendToPartyLong = false;
 		sendToParty = !sendToParty;
 		systemMessage((sendToParty ? 'Messages will be sent to the party shortened' : 'Only you will see messages'));
 	}
 
 	function toggleSentMessagesLong() {
+		if (!sendToParty || !enabled) {
+			systemMessage('Enable party messages first');
+			return;
+		}
 		sendToPartyLong = !sendToPartyLong;
 		systemMessage((sendToPartyLong ? 'Messages will be sent to the party complete' : (sendToParty ? 'Messages will be sent to the party shortened' : 'Only you will see messages')));
 	}
+
+	dispatch.hook('S_CHAT', 1, (event) => {	
+		if (!enabled || !boss || event.channel != 21 || format.stripTags(event.message) != supressNotice) return;	
+		supressNotice = null;
+		return false;
+	})
 
 	dispatch.hook('S_DUNGEON_EVENT_MESSAGE', 1, (event) => {	
 		if (!enabled || !boss) return;
@@ -170,14 +201,13 @@ module.exports = function VSNMLakanGuide(dispatch) {
 
 	function sendMessage(actionId, prepend = '') {
 		if (!enabled) return;
-		if (!sendToParty) {
-			dispatch.toClient('S_CHAT', 1, {
-				channel: 21, //21 = p-notice, 1 = party
-				authorName: 'DG-Guide',
-				message: prepend+BossActions[actionId].msg
-			});
-		}
+		dispatch.toClient('S_CHAT', 1, {
+			channel: 21, //21 = p-notice, 1 = party
+			authorName: 'DG-Guide',
+			message: prepend+BossActions[actionId].msg
+		});
 		if (sendToParty && sendToPartyLong) {
+			supressNotice = prepend+BossActions[actionId].msg;
 			dispatch.toServer('C_CHAT', 1, {
 				channel: 21, //21 = p-notice, 1 = party
 				message: prepend+BossActions[actionId].msg
@@ -185,6 +215,7 @@ module.exports = function VSNMLakanGuide(dispatch) {
 		} else {
 			if (typeof BossActions[actionId].msgParty !== 'string') return;
 			if (BossActions[actionId].msgParty.length == 0) return;
+			supressNotice = BossActions[actionId].msgParty;
 			setTimeout(function () {
 				dispatch.toServer('C_CHAT', 1, {
 					channel: 21, //21 = p-notice, 1 = party
