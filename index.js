@@ -206,23 +206,25 @@ module.exports = function VSNMLakanGuide(dispatch) {
 			authorName: 'DG-Guide',
 			message: prepend+BossActions[actionId].msg
 		});
-		if (sendToParty && sendToPartyLong) {
-			supressNotice = prepend+BossActions[actionId].msg;
-			dispatch.toServer('C_CHAT', 1, {
-				channel: 21, //21 = p-notice, 1 = party
-				message: prepend+BossActions[actionId].msg
-			});
-		} else if (sendToParty) {
-			if (typeof BossActions[actionId].msgParty !== 'string') return;
-			if (BossActions[actionId].msgParty.length == 0) return;
-			supressNotice = BossActions[actionId].msgParty;
-			setTimeout(function () {
+		if (sendToParty) {
+			if (sendToPartyLong) {
+				supressNotice = prepend+BossActions[actionId].msg;
 				dispatch.toServer('C_CHAT', 1, {
 					channel: 21, //21 = p-notice, 1 = party
-					message: BossActions[actionId].msgParty
+					message: prepend+BossActions[actionId].msg
 				});
-			}, 1000);
-		}		
+			} else {
+				if (typeof BossActions[actionId].msgParty !== 'string') return;
+				if (BossActions[actionId].msgParty.length == 0) return;
+				supressNotice = BossActions[actionId].msgParty;
+				setTimeout(function () {
+					dispatch.toServer('C_CHAT', 1, {
+						channel: 21, //21 = p-notice, 1 = party
+						message: BossActions[actionId].msgParty
+					});
+				}, 1000);
+			}
+		}
 	}	
 		
 	function systemMessage(msg) {
