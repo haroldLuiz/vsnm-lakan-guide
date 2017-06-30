@@ -212,7 +212,7 @@ module.exports = function VSNMLakanGuide(dispatch) {
 				channel: 21, //21 = p-notice, 1 = party
 				message: prepend+BossActions[actionId].msg
 			});
-		} else {
+		} else if (sendToParty) {
 			if (typeof BossActions[actionId].msgParty !== 'string') return;
 			if (BossActions[actionId].msgParty.length == 0) return;
 			supressNotice = BossActions[actionId].msgParty;
